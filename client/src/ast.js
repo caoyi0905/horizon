@@ -91,6 +91,11 @@ export class TermBase {
     checkArgs('below', arguments, { minArgs: 1, maxArgs: 2 })
     return new Below(this._sendRequest, this._query, belowSpec, bound)
   }
+  skip(size) {
+    this::checkIfLegalToChain('skip')
+    checkArgs('skip', arguments)
+    return new Skip(this._sendRequest, this._query, size)
+  }
   limit(size) {
     this::checkIfLegalToChain('limit')
     checkArgs('limit', arguments)
@@ -256,7 +261,7 @@ export class Collection extends TermBase {
   constructor(sendRequest, collectionName, lazyWrites) {
     const query = { collection: collectionName }
     const legalMethods = [
-      'find', 'findAll', 'justInitial', 'order', 'above', 'below', 'limit' ]
+      'find', 'findAll', 'justInitial', 'order', 'above', 'below', 'skip', 'limit' ]
     super(sendRequest, query, legalMethods)
     this._lazyWrites = lazyWrites
   }
@@ -312,7 +317,7 @@ export class FindAll extends TermBase {
     const findAllQuery = Object.assign({}, previousQuery, options)
     let legalMethods
     if (wrappedFields.length === 1) {
-      legalMethods = [ 'order', 'above', 'below', 'limit' ]
+      legalMethods = [ 'order', 'above', 'below', 'skip', 'limit' ]
     } else {
       // The vararg version of findAll cannot have anything chained to it
       legalMethods = []
@@ -325,7 +330,7 @@ export class Above extends TermBase {
   constructor(sendRequest, previousQuery, aboveSpec, bound) {
     const option = { above: [ aboveSpec, bound ] }
     const query = Object.assign({}, previousQuery, option)
-    const legalMethods = [ 'findAll', 'order', 'below', 'limit' ]
+    const legalMethods = [ 'findAll', 'order', 'below', 'skip', 'limit' ]
     super(sendRequest, query, legalMethods)
   }
 }
@@ -334,7 +339,7 @@ export class Below extends TermBase {
   constructor(sendRequest, previousQuery, belowSpec, bound) {
     const options = { below: [ belowSpec, bound ] }
     const query = Object.assign({}, previousQuery, options)
-    const legalMethods = [ 'findAll', 'order', 'above', 'limit' ]
+    const legalMethods = [ 'findAll', 'order', 'above', 'skip', 'limit' ]
     super(sendRequest, query, legalMethods)
   }
 }
@@ -344,7 +349,15 @@ export class Order extends TermBase {
     const wrappedFields = Array.isArray(fields) ? fields : [ fields ]
     const options = { order: [ wrappedFields, direction ] }
     const query = Object.assign({}, previousQuery, options)
-    const legalMethods = [ 'findAll', 'above', 'below', 'limit' ]
+    const legalMethods = [ 'findAll', 'above', 'below', 'skip', 'limit' ]
+    super(sendRequest, query, legalMethods)
+  }
+}
+
+export class Skip extends TermBase {
+  constructor(sendRequest, previousQuery, size) {
+    const query = Object.assign({}, previousQuery, { skip: size })
+    const legalMethods = [ 'limit' ]
     super(sendRequest, query, legalMethods)
   }
 }

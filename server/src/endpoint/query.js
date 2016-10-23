@@ -78,7 +78,13 @@ const make_reql = (raw_request, metadata) => {
   }
 
   if (options.limit !== undefined) {
-    reql = reql.limit(options.limit);
+    if(options.skip !== undefined){
+      //there is no limit here if it has skip options.
+      reql = reql.limit(100000);
+    }
+    else{
+      reql = reql.limit(options.limit);
+    }
   }
 
   return reql;

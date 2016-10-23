@@ -19,6 +19,9 @@ const read = Joi.alternatives().try(
 
     limit: Joi.number().integer().greater(-1).optional()
       .when('find', { is: Joi.any().required(), then: Joi.forbidden() }),
+    
+    skip: Joi.number().integer().greater(-1).optional()
+      .when('find', { is: Joi.any().required(), then: Joi.forbidden() }),
 
     order: Joi.array().ordered(
         Joi.array().items(Joi.string()).min(1).unique().label('fields').required(),
